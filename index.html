@@ -101,6 +101,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 .formhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .linkbtn { background: none; border: 0; padding: 0 4px; min-height: 44px; font: inherit; font-size: 14px; color: var(--muted); text-decoration: underline; cursor: pointer; }
 
+.warn { margin: 0; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--stamp); color: var(--stamp); font-size: 14px; font-weight: 500; line-height: 1.5; }
 .form { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > label, .field > .lab { font-weight: 700; font-size: 15px; }
@@ -188,6 +189,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
           <div class="field"><label for="t1">開始時間</label><input type="time" id="t1"></div>
           <div class="field"><label for="t2">結束時間</label><input type="time" id="t2"></div>
         </div>
+        <p class="warn" id="dateWarn" role="status" hidden></p>
       </div>
       <div class="field">
         <label for="why">請假原因</label>
@@ -275,12 +277,22 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     }
     return count;
   }
+  /* 開始日、結束日都填了（且不是未滿一日）時，以日期算出的上課日為準，避免天數選錯 */
+  function hasDates() {
+    return state.days !== "part" && !!($("#d1").value && $("#d2").value);
+  }
   function needs() {
+    var span = hasDates() ? spanDays() : -1;
     return {
-      paper: state.type === "事假" && state.days === "long" && spanDays() > 5,
-      lunch: state.days === "long",
+      paper: state.type === "事假" && (span >= 0 ? span > 5 : false) && state.days !== "part",
+      lunch: state.days !== "part" && (span >= 0 ? span >= 3 : state.days === "long"),
       report: state.type === "病假" && state.fever === "yes"
     };
+  }
+  function daysLabel() {
+    if (state.days === "part") return "未滿1日";
+    if (hasDates()) return spanDays() >= 3 ? "3天以上" : "1-2天";
+    return state.days === "long" ? "3天以上" : "1-2天";
   }
 
   /* 填過的內容暫存在這支手機上 24 小時，頁面重新載入也不會消失 */
@@ -331,7 +343,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 
   function buildMsg() {
     var n = needs();
-    var head = "【" + state.type + "・" + (state.days === "long" ? "3天以上" : state.days === "part" ? "未滿1日" : "1-2天") + (n.report ? "・發燒/傳染病" : "") + "】";
+    var head = "【" + state.type + "・" + daysLabel() + (n.report ? "・發燒/傳染病" : "") + "】";
     var lines = [
       head,
       "1.座號/姓名：" + $("#who").value.trim(),
@@ -360,13 +372,23 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     $("#timeRow").hidden = !part;
     $("#d2wrap").hidden = part;
     $("#d1l").textContent = part ? "請假日" : "開始日";
+    var w = $("#dateWarn");
+    var msgWarn = "";
+    if (hasDates()) {
+      var sp = spanDays();
+      if (sp < 1) msgWarn = "結束日比開始日早，請檢查日期。";
+      else if (state.days === "long" && sp < 3) msgWarn = "您選的是「3 天以上」，但日期只有 " + sp + " 個上課日（不含週末與國定假日），不需要填午餐停餐申請。如果天數選錯，請修改。";
+      else if (state.days === "short" && sp >= 3) msgWarn = "您選的是「1–2 天」，但日期有 " + sp + " 個上課日（不含週末與國定假日），需要填午餐停餐申請。如果天數選錯，請修改。";
+    }
+    w.textContent = msgWarn;
+    w.hidden = !msgWarn;
     var n = needs();
     var extra = n.lunch || n.report || n.paper;
     $("#finishText").textContent = extra
       ? "複製請假訊息，回到line貼給老師並附上表單截圖，請假才算完成！"
       : "複製請假訊息，回到line貼給老師，請假才算完成！謝謝 😊";
     $("#copy").textContent = extra
-      ? "複製請假訊息，回到line貼給老師；請注意訊息內還有表單需要填寫，請假尚未完成！"
+      ? "複製請假訊息，回到line貼給老師；請注意請假尚未完成！"
       : "複製請假訊息，回到line貼給老師，請假才算完成！";
     renderSteps();
     buildMsg();
