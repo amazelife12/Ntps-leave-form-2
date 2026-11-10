@@ -67,6 +67,9 @@ fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-d
 legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .seg3 { grid-template-columns: repeat(3, 1fr); }
+.seg3 span { flex-direction: column; gap: 2px; }
+.seg3 .ico { margin: 0; }
+.field textarea.need { border-color: var(--stamp); }
 .seg label { position: relative; }
 .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .seg span {
@@ -105,7 +108,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 .form { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > label, .field > .lab { font-weight: 700; font-size: 15px; }
-.field input[type="text"], .field input[type="date"], .field textarea {
+.field input[type="text"], .field input[type="date"], .field input[type="time"], .field textarea {
   width: 100%; min-height: 46px; padding: 9px 12px; font: inherit; color: var(--ink);
   background: var(--paper); border: 1.5px solid var(--rule); border-radius: 8px;
 }
@@ -141,10 +144,11 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   <section aria-labelledby="h-type">
     <h2 id="h-type">請假類型</h2>
     <fieldset>
-      <legend>請假原因</legend>
-      <div class="seg">
+      <legend>假別</legend>
+      <div class="seg seg3">
         <label><input type="radio" name="type" value="事假" checked><span><b class="ico" aria-hidden="true">🌱</b>事假</span></label>
         <label><input type="radio" name="type" value="病假"><span><b class="ico" aria-hidden="true">🌿</b>病假／一般病假</span></label>
+        <label><input type="radio" name="type" value="公假"><span><b class="ico" aria-hidden="true">🌻</b>公假</span></label>
       </div>
     </fieldset>
     <fieldset>
@@ -191,10 +195,14 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
         </div>
         <p class="warn" id="dateWarn" role="status" hidden></p>
       </div>
-      <div class="field">
-        <label for="why">請假原因</label>
-        <textarea id="why" placeholder="例：全家出遊／請假看醫生"></textarea>
-      </div>
+      <fieldset class="field" id="reasonSet">
+        <legend style="color:var(--ink);font-weight:700;font-size:15px">請假原因（可複選）</legend>
+        <div class="seg" id="reasonChips"></div>
+        <div class="field" id="otherWrap" hidden>
+          <label for="why">其他原因說明（必填）</label>
+          <textarea id="why" placeholder="請說明請假原因"></textarea>
+        </div>
+      </fieldset>
       <fieldset>
         <legend style="color:var(--ink);font-weight:700;font-size:15px">作業是否需要放警衛室</legend>
         <div class="seg">
@@ -226,6 +234,13 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   var KEY = "class209-leave-v2";
   var TTL = 24 * 60 * 60 * 1000;
   var state = { type: "事假", days: "short", fever: "no" };
+  var OPTIONS = {
+    "事假": ["家庭旅遊", "家中事務", "參加比賽或活動", "其他"],
+    "病假": ["感冒", "發燒", "腸胃不適", "受傷", "回診或看醫生", "其他"],
+    "公假": ["參加比賽或活動", "其他"]
+  };
+  var picked = [];
+  var lastType = "";
   var $ = function (s) { return document.querySelector(s); };
 
   function radio(name) {
@@ -289,6 +304,21 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       report: state.type === "病假" && state.fever === "yes"
     };
   }
+  function readPicked() {
+    picked = Array.prototype.map.call(document.querySelectorAll('input[name="reason"]:checked'), function (el) { return el.value; });
+  }
+  function renderReasons() {
+    var opts = OPTIONS[state.type] || [];
+    $("#reasonChips").innerHTML = opts.map(function (o) {
+      return '<label><input type="checkbox" name="reason" value="' + o + '"' + (picked.indexOf(o) >= 0 ? " checked" : "") + '><span>' + (o === "其他" ? "其他(請說明)" : o) + '</span></label>';
+    }).join("");
+  }
+  function reasonText() {
+    var other = $("#why").value.trim();
+    return picked.map(function (r) {
+      return r === "其他" ? (other ? "其他（" + other + "）" : "其他") : r;
+    }).join("、");
+  }
   function daysLabel() {
     if (state.days === "part") return "未滿1日";
     if (hasDates()) return spanDays() >= 3 ? "3天以上" : "1-2天";
@@ -301,7 +331,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       localStorage.setItem(KEY, JSON.stringify({
         ts: Date.now(),
         type: radio("type"), days: radio("days"), fever: radio("fever"), hw: radio("hw"),
-        who: $("#who").value, d1: $("#d1").value, d2: $("#d2").value, t1: $("#t1").value, t2: $("#t2").value, why: $("#why").value
+        who: $("#who").value, d1: $("#d1").value, d2: $("#d2").value, t1: $("#t1").value, t2: $("#t2").value, why: $("#why").value, picked: picked
       }));
     } catch (e) {}
   }
@@ -318,12 +348,14 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       $("#t1").value = s.t1 || "";
       $("#t2").value = s.t2 || "";
       $("#why").value = s.why || "";
+      picked = Array.isArray(s.picked) ? s.picked.filter(function (x) { return typeof x === "string"; }) : [];
     } catch (e) {}
   }
   function reset() {
     try { localStorage.removeItem(KEY); } catch (e) {}
     ["#who", "#d1", "#d2", "#t1", "#t2", "#why"].forEach(function (s) { $(s).value = ""; });
     Array.prototype.forEach.call(document.querySelectorAll('input[type="radio"]'), function (r) { r.checked = r.defaultChecked; });
+    picked = []; lastType = "";
     $("#copied").textContent = "";
     refresh();
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -343,12 +375,13 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 
   function buildMsg() {
     var n = needs();
+    $("#why").classList.toggle("need", picked.indexOf("其他") >= 0 && !$("#why").value.trim());
     var head = "【" + state.type + "・" + daysLabel() + (n.report ? "・發燒/傳染病" : "") + "】";
     var lines = [
       head,
       "1.座號/姓名：" + $("#who").value.trim(),
       "2.請假日期：" + dateText(),
-      "3.請假原因：" + $("#why").value.trim(),
+      "3.請假原因：" + reasonText(),
       "4.作業是否需要放警衛室：" + radio("hw")
     ];
     var todo = [];
@@ -367,6 +400,14 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     state.type = radio("type");
     state.days = radio("days");
     state.fever = state.type === "病假" ? radio("fever") : "no";
+    if (state.type !== lastType) {
+      var first = lastType === "";
+      lastType = state.type;
+      if (first) picked = picked.filter(function (x) { return (OPTIONS[state.type] || []).indexOf(x) >= 0; });
+      else { picked = []; $("#why").value = ""; }
+      renderReasons();
+    }
+    $("#otherWrap").hidden = picked.indexOf("其他") < 0;
     $("#feverSet").hidden = state.type !== "病假";
     var part = state.days === "part";
     $("#timeRow").hidden = !part;
@@ -396,6 +437,12 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 
   document.addEventListener("change", function (e) {
     var t = e.target;
+    if (t.matches('input[name="reason"]')) {
+      readPicked();
+      if (t.value === "發燒" && t.checked) setRadio("fever", "yes");
+      refresh();
+      return;
+    }
     if (t.matches('input[name="type"], input[name="days"], input[name="fever"]')) { refresh(); return; }
     if (t.matches("#d1, #d2")) { refresh(); return; }
     if (t.matches('input[name="hw"], #t1, #t2')) buildMsg();
@@ -407,6 +454,11 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 
   $("#copy").addEventListener("click", function () {
     var ta = $("#msg"), out = $("#copied");
+    if (picked.indexOf("其他") >= 0 && !$("#why").value.trim()) {
+      out.textContent = "請先填寫「其他原因說明」，再複製請假訊息。";
+      $("#why").focus();
+      return;
+    }
     var n = needs();
     function ok() {
       out.textContent = (n.lunch || n.report || n.paper)
