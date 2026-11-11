@@ -152,7 +152,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       </div>
     </fieldset>
     <fieldset>
-      <legend>請假天數</legend>
+      <legend>請假天數（上課日）</legend>
       <div class="seg seg3">
         <label><input type="radio" name="days" value="part"><span>未滿 1 日</span></label>
         <label><input type="radio" name="days" value="short" checked><span>1–2 天</span></label>
@@ -160,10 +160,10 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       </div>
     </fieldset>
     <fieldset id="feverSet" hidden>
-      <legend>孩子有發燒，或確診腸病毒、流感、諾羅、腸胃炎、登革熱、水痘或其他校園傳染病嗎？</legend>
+      <legend>孩子有確診腸病毒、流感、新冠、諾羅、腸胃炎、登革熱、水痘或其他校園傳染病嗎？</legend>
       <div class="seg">
         <label><input type="radio" name="fever" value="no" checked><span>沒有</span></label>
-        <label><input type="radio" name="fever" value="yes"><span>有（已發燒／已確診）</span></label>
+        <label><input type="radio" name="fever" value="yes"><span>有（已確診）</span></label>
       </div>
     </fieldset>
   </section>
@@ -372,7 +372,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     var n = needs();
     var html = '<li>填寫請假資訊，複製後回到line貼給老師</li>';
     if (n.lunch) html += '<li>請填「午餐停餐申請」，並截圖傳給老師<small>請假 3 天以上需要，請於前一天中午 12:00 前提出。若有填報困難，請洽導師。</small></li>';
-    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>有發燒或確診時需要。若有填報困難，請洽導師。</small></li>';
+    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要。若有填報困難，請洽導師。</small></li>';
     if (n.paper) html += '<li class="star"><span class="mk" aria-hidden="true">*</span>事假超過 5 個上課日（共 ' + spanDays() + ' 天），另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。</small></li>';
     else if (state.type === "事假" && state.days === "long") html += '<li class="star"><span class="mk" aria-hidden="true">*</span>若事假超過 5 個上課日，需另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。填好日期後，這裡會自動計算。</small></li>';
     $("#steps").innerHTML = html;
@@ -395,8 +395,8 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
         '<a class="btn" href="' + LUNCH_URL + '" target="_blank" rel="noopener">開啟停餐登記表單</a></div>';
     }
     if (n.report) {
-      html += '<div class="item"><span class="tag">發燒／傳染病</span><h3>校園傳染病通報系統</h3>' +
-        '<p>孩子有發燒，或確診腸病毒、流感、諾羅、腸胃炎、登革熱、水痘或其他校園傳染病，請家長協助填寫通報。</p>' +
+      html += '<div class="item"><span class="tag">傳染病</span><h3>校園傳染病通報系統</h3>' +
+        '<p>孩子確診腸病毒、流感、新冠、諾羅、腸胃炎、登革熱、水痘或其他校園傳染病，請家長協助填寫通報。</p>' +
         '<a class="btn" href="' + REPORT_URL + '" target="_blank" rel="noopener">開啟傳染病通報系統</a></div>';
     }
     $("#lastItems").innerHTML = html;
@@ -406,7 +406,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   function buildMsg() {
     var n = needs();
     $("#why").classList.toggle("need", picked.indexOf("其他") >= 0 && !$("#why").value.trim());
-    var head = "【" + state.type + "・" + daysLabel() + (n.report ? "・發燒/傳染病" : "") + "】";
+    var head = "【" + state.type + "・" + daysLabel() + (n.report ? "・傳染病" : "") + "】";
     var lines = [
       head,
       "1.座號/姓名：" + $("#who").value.trim(),
@@ -468,7 +468,6 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     var t = e.target;
     if (t.matches('input[name="reason"]')) {
       readPicked();
-      if (t.value === "發燒" && t.checked) setRadio("fever", "yes");
       refresh();
       return;
     }
