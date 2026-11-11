@@ -221,12 +221,6 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     <p class="copied" id="copied" role="status"></p>
   </section>
 
-  <section aria-labelledby="h-last" id="last" hidden>
-    <h2 id="h-last">最後一步</h2>
-    <p class="notice" id="lastNotice">下面的表單在別的網站，填完表單後把畫面截圖傳給老師就完成了。若有填報困難，請洽導師。</p>
-    <div id="lastItems" style="display:flex;flex-direction:column;gap:10px"></div>
-  </section>
-
   <div class="finish">
     <div class="stamp" aria-hidden="true">家長<br>確認</div>
     <p id="finishText">複製請假訊息，回到line貼給老師，請假才算完成！謝謝 😊</p>
@@ -371,36 +365,12 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   function renderSteps() {
     var n = needs();
     var html = '<li>填寫請假資訊，複製後回到line貼給老師</li>';
-    if (n.lunch) html += '<li>請填「午餐停餐申請」，並截圖傳給老師<small>請假 3 天以上需要，請於前一天中午 12:00 前提出。若有填報困難，請洽導師。</small></li>';
-    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要。若有填報困難，請洽導師。</small></li>';
+    if (n.lunch) html += '<li>請填「午餐停餐申請」，並截圖傳給老師<small>請假 3 天以上需要，請於前一天中午 12:00 前提出。表單連結會附在複製的訊息裡，若有填報困難，請洽導師。</small></li>';
+    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要。表單連結會附在複製的訊息裡，若有填報困難，請洽導師。</small></li>';
     if (n.paper) html += '<li class="star"><span class="mk" aria-hidden="true">*</span>事假超過 5 個上課日（共 ' + spanDays() + ' 天），另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。</small></li>';
     else if (state.type === "事假" && state.days === "long") html += '<li class="star"><span class="mk" aria-hidden="true">*</span>若事假超過 5 個上課日，需另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。填好日期後，這裡會自動計算。</small></li>';
     $("#steps").innerHTML = html;
     $("#count").textContent = (1 + (n.lunch ? 1 : 0) + (n.report ? 1 : 0) + (n.paper ? 1 : 0)) + " 項";
-  }
-
-  function renderLast() {
-    var n = needs();
-    var box = $("#last");
-    if (!n.lunch && !n.report && !n.paper) { box.hidden = true; $("#lastItems").innerHTML = ""; return; }
-    $("#lastNotice").hidden = !(n.lunch || n.report);
-    var html = "";
-    if (n.paper) {
-      html += '<div class="item"><span class="tag">事假超過 5 個上課日</span><h3>紙本假單</h3>' +
-        '<p>事假超過 5 個上課日（共 ' + spanDays() + ' 天，不含週末與國定假日），需要另外填寫紙本假單。請洽導師拿紙本假單，填寫後交回導師。</p></div>';
-    }
-    if (n.lunch) {
-      html += '<div class="item"><span class="tag">請假 3 天以上</span><h3>午餐停餐申請</h3>' +
-        '<p>目前國小學童午餐全面免費供應，但為了避免資源浪費及珍惜食物，請假三天以上，請於前一天中午 12:00 前提出申請，以利廚房作業。</p>' +
-        '<a class="btn" href="' + LUNCH_URL + '" target="_blank" rel="noopener">開啟停餐登記表單</a></div>';
-    }
-    if (n.report) {
-      html += '<div class="item"><span class="tag">傳染病</span><h3>校園傳染病通報系統</h3>' +
-        '<p>孩子確診腸病毒、流感、新冠、諾羅、腸胃炎、登革熱、水痘或其他校園傳染病，請家長協助填寫通報。</p>' +
-        '<a class="btn" href="' + REPORT_URL + '" target="_blank" rel="noopener">開啟傳染病通報系統</a></div>';
-    }
-    $("#lastItems").innerHTML = html;
-    box.hidden = false;
   }
 
   function buildMsg() {
@@ -419,6 +389,8 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     if (n.report) todo.push("「傳染病通報系統」");
     var blocks = [lines.join("\n")];
     if (todo.length) blocks.push("*另須填寫" + todo.join("及") + "，填完截圖給老師。");
+    if (n.lunch) blocks.push("🌸「午餐停餐申請」 " + LUNCH_URL);
+    if (n.report) blocks.push("🍃「傳染病通報系統」 " + REPORT_URL);
     if (n.paper) blocks.push("*事假超過5個上課日（共" + spanDays() + "天）：需另填紙本假單，請向導師領取。");
     $("#msg").value = blocks.join("\n\n");
     save();
@@ -457,10 +429,9 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       ? "複製請假訊息，回到line貼給老師並附上表單截圖，請假才算完成！"
       : "複製請假訊息，回到line貼給老師，請假才算完成！謝謝 😊";
     $("#copy").textContent = extra
-      ? "複製請假訊息，回到line貼給老師；請注意下面還有表單需要填寫，請假尚未完成！"
+      ? "複製請假訊息，回到line貼給老師；請注意請假尚未完成！"
       : "複製請假訊息，回到line貼給老師，請假才算完成！";
     renderSteps();
-    renderLast();
     buildMsg();
   }
 
@@ -490,7 +461,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     var n = needs();
     function ok() {
       out.textContent = (n.lunch || n.report || n.paper)
-        ? "已複製，請回到line貼給老師。請注意下面還有表單需要填寫，請假尚未完成！"
+        ? "已複製，請回到line貼給老師。請注意訊息內還有表單需要填寫，請假尚未完成！"
         : "已複製，請回到line貼給老師，請假才算完成！";
     }
     function fallback() {
