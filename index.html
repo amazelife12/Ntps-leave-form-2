@@ -69,7 +69,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 .seg3 { grid-template-columns: repeat(3, 1fr); }
 .seg3 span { flex-direction: column; gap: 2px; }
 .seg3 .ico { margin: 0; }
-.field textarea.need { border-color: var(--stamp); }
+.field textarea.need, .field input.need { border-color: var(--stamp); }
 .seg label { position: relative; }
 .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .seg span {
@@ -104,6 +104,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
 .formhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .linkbtn { background: none; border: 0; padding: 0 4px; min-height: 44px; font: inherit; font-size: 14px; color: var(--muted); text-decoration: underline; cursor: pointer; }
 
+.daycount { margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 14px; line-height: 1.5; }
 .warn { margin: 0; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--stamp); color: var(--stamp); font-size: 14px; font-weight: 500; line-height: 1.5; }
 .form { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -141,38 +142,6 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     <p>由上往下填寫，直到最後一步完成，才算完成請假。</p>
   </header>
 
-  <section aria-labelledby="h-type">
-    <h2 id="h-type">請假類型</h2>
-    <fieldset>
-      <legend>假別</legend>
-      <div class="seg seg3">
-        <label><input type="radio" name="type" value="事假" checked><span><b class="ico" aria-hidden="true">🌱</b>事假</span></label>
-        <label><input type="radio" name="type" value="病假"><span><b class="ico" aria-hidden="true">🌺</b>病假／一般病假</span></label>
-        <label><input type="radio" name="type" value="公假"><span><b class="ico" aria-hidden="true">🌻</b>公假</span></label>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>請假天數（上課日）</legend>
-      <div class="seg seg3">
-        <label><input type="radio" name="days" value="part"><span>未滿 1 日</span></label>
-        <label><input type="radio" name="days" value="short" checked><span>1–2 天</span></label>
-        <label><input type="radio" name="days" value="long"><span>3 天以上</span></label>
-      </div>
-    </fieldset>
-    <fieldset id="feverSet" hidden>
-      <legend>孩子有確診腸病毒、流感、新冠、諾羅、腸胃炎、登革熱、水痘或其他校園傳染病嗎？</legend>
-      <div class="seg">
-        <label><input type="radio" name="fever" value="no" checked><span>沒有</span></label>
-        <label><input type="radio" name="fever" value="yes"><span>有（已確診）</span></label>
-      </div>
-    </fieldset>
-  </section>
-
-  <section aria-labelledby="h-todo">
-    <h2 id="h-todo">這次的流程<span class="count" id="count">1 項</span></h2>
-    <ol class="steps" id="steps"></ol>
-  </section>
-
   <section aria-labelledby="h-form">
     <div class="formhead">
       <h2 id="h-form">請假資訊</h2>
@@ -183,8 +152,20 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
         <label for="who">座號／姓名</label>
         <input type="text" id="who" placeholder="例：30號 王小楠" autocomplete="off">
       </div>
+      <fieldset class="field">
+        <legend style="color:var(--ink);font-weight:700;font-size:15px">假別</legend>
+        <div class="seg seg3">
+          <label><input type="radio" name="type" value="事假" checked><span><b class="ico" aria-hidden="true">🌱</b>事假</span></label>
+          <label><input type="radio" name="type" value="病假"><span><b class="ico" aria-hidden="true">🌺</b>病假</span></label>
+          <label><input type="radio" name="type" value="公假"><span><b class="ico" aria-hidden="true">🌻</b>公假</span></label>
+        </div>
+      </fieldset>
       <div class="field">
         <span class="lab" id="dlab">請假日期</span>
+        <div class="seg" id="modeSeg">
+          <label><input type="radio" name="days" value="full" checked><span>整天（1 日以上）</span></label>
+          <label><input type="radio" name="days" value="part"><span>未滿 1 日</span></label>
+        </div>
         <div class="dates" role="group" aria-labelledby="dlab">
           <div class="field"><label for="d1" id="d1l">開始日</label><input type="date" id="d1"></div>
           <div class="field" id="d2wrap"><label for="d2">結束日（只請一天可不填）</label><input type="date" id="d2"></div>
@@ -193,11 +174,20 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
           <div class="field"><label for="t1">開始時間</label><input type="time" id="t1"></div>
           <div class="field"><label for="t2">結束時間</label><input type="time" id="t2"></div>
         </div>
+        <p class="daycount" id="dayCount" role="status" hidden></p>
         <p class="warn" id="dateWarn" role="status" hidden></p>
       </div>
       <fieldset class="field" id="reasonSet">
         <legend style="color:var(--ink);font-weight:700;font-size:15px">請假原因（可複選）</legend>
         <div class="seg" id="reasonChips"></div>
+        <div class="field" id="diseaseWrap" hidden>
+          <div class="lab">校園傳染病病名（可複選）</div>
+          <div class="seg" id="diseaseChips"></div>
+          <div class="field" id="dOtherWrap" hidden>
+            <label for="dOther">其他傳染病名稱（必填）</label>
+            <input type="text" id="dOther" placeholder="請填寫病名" autocomplete="off">
+          </div>
+        </div>
         <div class="field" id="otherWrap" hidden>
           <label for="why">其他原因說明（必填）</label>
           <textarea id="why" placeholder="請說明請假原因"></textarea>
@@ -211,6 +201,11 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
         </div>
       </fieldset>
     </div>
+  </section>
+
+  <section aria-labelledby="h-todo">
+    <h2 id="h-todo">這次的流程<span class="count" id="count">1 項</span></h2>
+    <ol class="steps" id="steps"></ol>
   </section>
 
   <section class="out" aria-labelledby="h-out">
@@ -233,13 +228,16 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   var REPORT_URL = "https://cpmimicker07-cloud.github.io/ntpshealth/";
   var KEY = "class209-leave-v2";
   var TTL = 24 * 60 * 60 * 1000;
-  var state = { type: "事假", days: "short", fever: "no" };
+  var state = { type: "事假", days: "full" };
   var OPTIONS = {
     "事假": ["家庭旅遊", "家中事務", "參加比賽或活動", "其他"],
-    "病假": ["感冒", "發燒", "腸胃不適", "受傷", "回診或看醫生", "其他"],
+    "病假": ["感冒", "發燒", "腸胃不適", "受傷", "回診或看醫生", "腸病毒", "流感", "新冠", "諾羅", "腸胃炎", "登革熱", "水痘", "其他"],
     "公假": ["參加比賽或活動", "其他"]
   };
+  var INFECT = ["腸病毒", "流感", "新冠", "諾羅", "腸胃炎", "登革熱", "水痘"];
+  var DISEASES = ["腸病毒", "流感", "新冠", "諾羅", "腸胃炎", "登革熱", "水痘", "其他"];
   var picked = [];
+  var diseases = [];
   var lastType = "";
   var $ = function (s) { return document.querySelector(s); };
 
@@ -260,15 +258,17 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   }
   function tfmt(v) { return v ? v.replace(/^0/, "") : ""; }
   function dateText() {
+    var a = fmt($("#d1").value);
+    if (!a) return "";
     if (state.days === "part") {
-      var d = fmt($("#d1").value);
       var a1 = tfmt($("#t1").value), b1 = tfmt($("#t2").value);
-      var tm = (a1 || b1) ? (a1 + "-" + b1) : "";
-      return (d + " " + tm).trim();
+      var tm = (a1 || b1) ? (" " + a1 + "-" + b1) : "";
+      return a + tm + "，未滿1日";
     }
-    var a = fmt($("#d1").value), b = fmt($("#d2").value);
-    if (a && b && $("#d1").value !== $("#d2").value) return a + "～" + b;
-    return a || b;
+    var b = fmt($("#d2").value);
+    var n = spanDays();
+    var range = (b && $("#d1").value !== $("#d2").value) ? a + "～" + b : a;
+    return n >= 1 ? range + "，共" + n + "天" : range;
   }
   /* 國定假日（週一至週五的放假日，含補假）。依人事行政總處公告整理，校慶補假、寒暑假等校內假日未列入。 */
   var HOLIDAYS = {
@@ -278,10 +278,11 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     "2027-09-15": 1, "2027-09-28": 1, "2027-10-11": 1, "2027-10-25": 1, "2027-12-24": 1, "2027-12-31": 1
   };
   function pad(n) { return (n < 10 ? "0" : "") + n; }
-  /* 計算請假期間的上課日：排除週六、週日與國定假日 */
+  /* 計算請假期間的上課日：排除週六、週日與國定假日；沒填開始日回傳 -1，只填開始日視為只請一天 */
   function spanDays() {
-    var a = $("#d1").value, b = $("#d2").value;
-    if (!a || !b) return 0;
+    var a = $("#d1").value;
+    if (!a) return -1;
+    var b = state.days === "part" ? a : ($("#d2").value || a);
     var d = new Date(a + "T00:00:00"), end = new Date(b + "T00:00:00");
     var count = 0, guard = 0;
     while (d <= end && guard++ < 400) {
@@ -292,16 +293,13 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     }
     return count;
   }
-  /* 開始日、結束日都填了（且不是未滿一日）時，以日期算出的上課日為準，避免天數選錯 */
-  function hasDates() {
-    return state.days !== "part" && !!($("#d1").value && $("#d2").value);
-  }
   function needs() {
-    var span = hasDates() ? spanDays() : -1;
+    var span = spanDays();
+    var full = state.days !== "part";
     return {
-      paper: state.type === "事假" && (span >= 0 ? span > 5 : false) && state.days !== "part",
-      lunch: state.days !== "part" && (span >= 0 ? span >= 3 : state.days === "long"),
-      report: state.type === "病假" && state.fever === "yes"
+      paper: state.type === "事假" && full && span >= 5,
+      lunch: full && span >= 3,
+      report: state.type === "病假" && picked.some(function (x) { return INFECT.indexOf(x) >= 0; })
     };
   }
   function readPicked() {
@@ -310,19 +308,33 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   function renderReasons() {
     var opts = OPTIONS[state.type] || [];
     $("#reasonChips").innerHTML = opts.map(function (o) {
-      return '<label><input type="checkbox" name="reason" value="' + o + '"' + (picked.indexOf(o) >= 0 ? " checked" : "") + '><span>' + (o === "其他" ? "其他(請說明)" : o) + '</span></label>';
+      return '<label><input type="checkbox" name="reason" value="' + o + '"' + (picked.indexOf(o) >= 0 ? " checked" : "") + '><span>' + (o === "其他" ? "其他(請說明)" : o === "校園傳染病" ? "校園傳染病(已確診)" : o) + '</span></label>';
+    }).join("");
+  }
+  function readDiseases() {
+    diseases = Array.prototype.map.call(document.querySelectorAll('input[name="disease"]:checked'), function (el) { return el.value; });
+  }
+  function renderDiseases() {
+    $("#diseaseChips").innerHTML = DISEASES.map(function (o) {
+      return '<label><input type="checkbox" name="disease" value="' + o + '"' + (diseases.indexOf(o) >= 0 ? " checked" : "") + '><span>' + (o === "其他" ? "其他(請說明)" : o) + '</span></label>';
     }).join("");
   }
   function reasonText() {
     var other = $("#why").value.trim();
     return picked.map(function (r) {
-      return r === "其他" ? (other ? "其他（" + other + "）" : "其他") : r;
+      if (r === "其他") return other ? "其他（" + other + "）" : "其他";
+      if (r === "校園傳染病") {
+        var dn = $("#dOther").value.trim();
+        var names = diseases.map(function (d) { return d === "其他" ? (dn || "其他") : d; });
+        return names.length ? "校園傳染病（" + names.join("、") + "）" : "校園傳染病";
+      }
+      return r;
     }).join("、");
   }
   function daysLabel() {
     if (state.days === "part") return "未滿1日";
-    if (hasDates()) return spanDays() >= 3 ? "3天以上" : "1-2天";
-    return state.days === "long" ? "3天以上" : "1-2天";
+    var n = spanDays();
+    return n >= 1 ? "共" + n + "天" : "";
   }
 
   /* 填過的內容暫存在這支手機上 24 小時，頁面重新載入也不會消失 */
@@ -330,8 +342,8 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     try {
       localStorage.setItem(KEY, JSON.stringify({
         ts: Date.now(),
-        type: radio("type"), days: radio("days"), fever: radio("fever"), hw: radio("hw"),
-        who: $("#who").value, d1: $("#d1").value, d2: $("#d2").value, t1: $("#t1").value, t2: $("#t2").value, why: $("#why").value, picked: picked
+        type: radio("type"), days: radio("days"), hw: radio("hw"),
+        who: $("#who").value, d1: $("#d1").value, d2: $("#d2").value, t1: $("#t1").value, t2: $("#t2").value, why: $("#why").value, picked: picked, diseases: diseases, dOther: $("#dOther").value
       }));
     } catch (e) {}
   }
@@ -341,7 +353,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       if (!raw) return;
       var s = JSON.parse(raw);
       if (!s || !s.ts || Date.now() - s.ts > TTL) { localStorage.removeItem(KEY); return; }
-      setRadio("type", s.type); setRadio("days", s.days); setRadio("fever", s.fever); setRadio("hw", s.hw);
+      setRadio("type", s.type); setRadio("days", s.days); setRadio("hw", s.hw);
       $("#who").value = s.who || "";
       $("#d1").value = s.d1 || "";
       $("#d2").value = s.d2 || "";
@@ -349,26 +361,28 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       $("#t2").value = s.t2 || "";
       $("#why").value = s.why || "";
       picked = Array.isArray(s.picked) ? s.picked.filter(function (x) { return typeof x === "string"; }) : [];
+      diseases = Array.isArray(s.diseases) ? s.diseases.filter(function (x) { return DISEASES.indexOf(x) >= 0; }) : [];
+      $("#dOther").value = s.dOther || "";
     } catch (e) {}
   }
   function reset() {
     try { localStorage.removeItem(KEY); } catch (e) {}
     ["#who", "#d1", "#d2", "#t1", "#t2", "#why"].forEach(function (s) { $(s).value = ""; });
     Array.prototype.forEach.call(document.querySelectorAll('input[type="radio"]'), function (r) { r.checked = r.defaultChecked; });
-    picked = []; lastType = "";
+    picked = []; diseases = []; lastType = "";
+    $("#dOther").value = "";
     $("#copied").textContent = "";
     refresh();
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    $("#h-type").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    $("#h-form").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   }
 
   function renderSteps() {
     var n = needs();
-    var html = '<li>填寫請假資訊，複製後回到line貼給老師</li>';
-    if (n.lunch) html += '<li>請填「午餐停餐申請」，並截圖傳給老師<small>請假 3 天以上需要，請於前一天中午 12:00 前提出。表單連結會附在複製的訊息裡，若有填報困難，請洽導師。</small></li>';
-    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要。表單連結會附在複製的訊息裡，若有填報困難，請洽導師。</small></li>';
-    if (n.paper) html += '<li class="star"><span class="mk" aria-hidden="true">*</span>事假超過 5 個上課日（共 ' + spanDays() + ' 天），另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。</small></li>';
-    else if (state.type === "事假" && state.days === "long") html += '<li class="star"><span class="mk" aria-hidden="true">*</span>若事假超過 5 個上課日，需另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。填好日期後，這裡會自動計算。</small></li>';
+    var html = '<li>下方藍色按鈕複製請假訊息，複製後回到line貼給老師。</li>';
+    if (n.lunch) html += '<li>請填「午餐停餐申請」，並截圖傳給老師<small>請假 3 個上課日以上需要，請於前一天中午 12:00 前提出。請回到line訊息內，導師會提供表單連結，若有填報困難，請洽導師。</small></li>';
+    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要填寫，請回到line訊息內，導師會提供表單連結，若有填報困難，請洽導師。</small></li>';
+    if (n.paper) html += '<li class="star"><span class="mk" aria-hidden="true">*</span>事假 5 個上課日以上（共 ' + spanDays() + ' 天），另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。</small></li>';
     $("#steps").innerHTML = html;
     $("#count").textContent = (1 + (n.lunch ? 1 : 0) + (n.report ? 1 : 0) + (n.paper ? 1 : 0)) + " 項";
   }
@@ -376,7 +390,9 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   function buildMsg() {
     var n = needs();
     $("#why").classList.toggle("need", picked.indexOf("其他") >= 0 && !$("#why").value.trim());
-    var head = "【" + state.type + "・" + daysLabel() + (n.report ? "・傳染病" : "") + "】";
+    $("#dOther").classList.toggle("need", diseases.indexOf("其他") >= 0 && !$("#dOther").value.trim());
+    var dl = daysLabel();
+    var head = "【" + state.type + (dl ? "・" + dl : "") + (n.report ? "・傳染病" : "") + (n.lunch ? "・停餐" : "") + (n.paper ? "・紙本假單" : "") + "】";
     var lines = [
       head,
       "1.座號/姓名：" + $("#who").value.trim(),
@@ -391,7 +407,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     if (todo.length) blocks.push("*另須填寫" + todo.join("及") + "，填完截圖給老師。");
     if (n.lunch) blocks.push("🌸「午餐停餐申請」 " + LUNCH_URL);
     if (n.report) blocks.push("🍃「傳染病通報系統」 " + REPORT_URL);
-    if (n.paper) blocks.push("*事假超過5個上課日（共" + spanDays() + "天）：需另填紙本假單，請向導師領取。");
+    if (n.paper) blocks.push("*事假5個上課日以上（共" + spanDays() + "天）：需另填紙本假單，請向導師領取。");
     $("#msg").value = blocks.join("\n\n");
     save();
   }
@@ -399,30 +415,41 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   function refresh() {
     state.type = radio("type");
     state.days = radio("days");
-    state.fever = state.type === "病假" ? radio("fever") : "no";
     if (state.type !== lastType) {
       var first = lastType === "";
       lastType = state.type;
       if (first) picked = picked.filter(function (x) { return (OPTIONS[state.type] || []).indexOf(x) >= 0; });
-      else { picked = []; $("#why").value = ""; }
+      else { picked = []; diseases = []; $("#why").value = ""; $("#dOther").value = ""; }
       renderReasons();
+      renderDiseases();
     }
     $("#otherWrap").hidden = picked.indexOf("其他") < 0;
-    $("#feverSet").hidden = state.type !== "病假";
+    var needDis = state.type === "病假" && picked.indexOf("校園傳染病") >= 0;
+    if (!needDis && (diseases.length || $("#dOther").value)) {
+      diseases = []; $("#dOther").value = ""; renderDiseases();
+    }
+    $("#diseaseWrap").hidden = !needDis;
+    $("#dOtherWrap").hidden = !(needDis && diseases.indexOf("其他") >= 0);
     var part = state.days === "part";
     $("#timeRow").hidden = !part;
     $("#d2wrap").hidden = part;
     $("#d1l").textContent = part ? "請假日" : "開始日";
+    var sp = spanDays();
+    var d1v = $("#d1").value, d2v = $("#d2").value;
     var w = $("#dateWarn");
     var msgWarn = "";
-    if (hasDates()) {
-      var sp = spanDays();
-      if (sp < 1) msgWarn = "結束日比開始日早，請檢查日期。";
-      else if (state.days === "long" && sp < 3) msgWarn = "您選的是「3 天以上」，但日期只有 " + sp + " 個上課日（不含週末與國定假日），不需要填午餐停餐申請。如果天數選錯，請修改。";
-      else if (state.days === "short" && sp >= 3) msgWarn = "您選的是「1–2 天」，但日期有 " + sp + " 個上課日（不含週末與國定假日），需要填午餐停餐申請。如果天數選錯，請修改。";
-    }
+    if (d1v && !part && d2v && d2v < d1v) msgWarn = "結束日比開始日早，請檢查日期。";
+    else if (d1v && sp === 0) msgWarn = "這段日期都是週末或國定假日，不需要請假，請檢查日期。";
     w.textContent = msgWarn;
     w.hidden = !msgWarn;
+    var dc = $("#dayCount");
+    if (!part && d1v && sp >= 1) {
+      dc.textContent = "共 " + sp + " 個上課日（不含週末與國定假日）";
+      dc.hidden = false;
+    } else {
+      dc.textContent = "";
+      dc.hidden = true;
+    }
     var n = needs();
     var extra = n.lunch || n.report || n.paper;
     $("#finishText").textContent = extra
@@ -432,6 +459,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       ? "複製請假訊息，回到line貼給老師；請注意請假尚未完成！"
       : "複製請假訊息，回到line貼給老師，請假才算完成！";
     renderSteps();
+    
     buildMsg();
   }
 
@@ -442,12 +470,13 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       refresh();
       return;
     }
-    if (t.matches('input[name="type"], input[name="days"], input[name="fever"]')) { refresh(); return; }
+    if (t.matches('input[name="disease"]')) { readDiseases(); refresh(); return; }
+    if (t.matches('input[name="type"], input[name="days"]')) { refresh(); return; }
     if (t.matches("#d1, #d2")) { refresh(); return; }
     if (t.matches('input[name="hw"], #t1, #t2')) buildMsg();
   });
   document.addEventListener("input", function (e) {
-    if (e.target.matches("#who, #why")) buildMsg();
+    if (e.target.matches("#who, #why, #dOther")) buildMsg();
   });
   $("#reset").addEventListener("click", reset);
 
@@ -458,10 +487,21 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       $("#why").focus();
       return;
     }
+    if (picked.indexOf("校園傳染病") >= 0) {
+      if (!diseases.length) {
+        out.textContent = "請先選擇校園傳染病的病名，再複製請假訊息。";
+        return;
+      }
+      if (diseases.indexOf("其他") >= 0 && !$("#dOther").value.trim()) {
+        out.textContent = "請填寫其他傳染病的名稱，再複製請假訊息。";
+        $("#dOther").focus();
+        return;
+      }
+    }
     var n = needs();
     function ok() {
       out.textContent = (n.lunch || n.report || n.paper)
-        ? "已複製，請回到line貼給老師。請注意訊息內還有表單需要填寫，請假尚未完成！"
+        ? "已複製，請回到line貼給老師。請注意還有表單需要填寫，請假尚未完成！"
         : "已複製，請回到line貼給老師，請假才算完成！";
     }
     function fallback() {
