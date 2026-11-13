@@ -449,13 +449,13 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     ];
     var std = picked.filter(function (x) { return STD[x]; }).map(function (x) { return "・" + x + "：" + STD[x]; });
     var todo = [];
-    if (n.lunch) todo.push("「午餐停餐申請」");
     if (n.report) todo.push("「傳染病通報系統」");
+    if (n.lunch) todo.push("「午餐停餐申請」");
     var blocks = [lines.join("\n")];
     if (state.type === "病假" && std.length) blocks.push("📌返校標準\n" + std.join("\n"));
     if (todo.length) blocks.push("*另須填寫" + todo.join("及") + "，填完截圖給老師。");
-    if (n.lunch) blocks.push("🌸「午餐停餐申請」 " + LUNCH_URL);
     if (n.report) blocks.push("🍃「傳染病通報系統」 " + REPORT_URL);
+    if (n.lunch) blocks.push("🌸「午餐停餐申請」 " + LUNCH_URL);
     if (n.paper) blocks.push("*事假5個上課日以上（共" + spanDays() + "天）：需另填紙本假單，請向導師領取。");
     $("#msg").value = blocks.join("\n\n");
     markMiss();
