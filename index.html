@@ -1,5 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
-<title>楠梓國小班級請假單 B版</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style></head><body><title>楠梓國小班級請假單 B版</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -169,7 +168,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
       <fieldset class="field">
         <legend style="color:var(--ink);font-weight:700;font-size:15px">假別</legend>
         <div class="seg seg3">
-          <label><input type="radio" name="type" value="事假" checked><span><b class="ico" aria-hidden="true">🌱</b>事假</span></label>
+          <label><input type="radio" name="type" value="事假/喪假" checked><span><b class="ico" aria-hidden="true">🌱</b>事假/喪假</span></label>
           <label><input type="radio" name="type" value="病假"><span><b class="ico" aria-hidden="true">🌺</b>病假</span></label>
           <label><input type="radio" name="type" value="公假"><span><b class="ico" aria-hidden="true">🌻</b>公假</span></label>
         </div>
@@ -248,14 +247,15 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   var REPORT_URL = "https://cpmimicker07-cloud.github.io/ntpshealth/";
   var KEY = "class209-leave-v2";
   var TTL = 24 * 60 * 60 * 1000;
-  var state = { type: "事假", days: "full" };
+  var T1 = "事假/喪假";
+  var state = { type: T1, days: "full" };
   var OPTIONS = {
-    "事假": ["家庭旅遊", "家中事務", "參加比賽或活動", "其他"],
-    "病假": ["感冒", "發燒", "嘔吐", "身體不適", "受傷", "回診或看醫生", "腸病毒", "流感", "新冠", "腸胃炎/腸胃型感冒", "登革熱", "水痘", "其他"],
+    "事假/喪假": ["家庭旅遊", "家中事務", "參加比賽或活動", "喪假（家人過世）", "其他"],
+    "病假": ["身體不適", "受傷", "回診或看醫生", "感冒", "發燒", "嘔吐", "腹瀉", "腸病毒", "A型流感", "B型流感", "新冠", "腸胃炎/腸胃型感冒", "登革熱", "水痘", "其他"],
     "公假": ["參加比賽或活動", "其他"]
   };
-  var INFECT = ["腸病毒", "流感", "新冠", "腸胃炎/腸胃型感冒", "登革熱", "水痘"];
-  var DISEASES = ["腸病毒", "流感", "新冠", "腸胃炎/腸胃型感冒", "登革熱", "水痘", "其他"];
+  var INFECT = ["腸病毒", "A型流感", "B型流感", "新冠", "腸胃炎/腸胃型感冒", "登革熱", "水痘"];
+  var DISEASES = ["腸病毒", "A型流感", "B型流感", "新冠", "腸胃炎/腸胃型感冒", "登革熱", "水痘", "其他"];
   var picked = [];
   var diseases = [];
   var lastType = "";
@@ -317,7 +317,7 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     var span = spanDays();
     var full = state.days !== "part";
     return {
-      paper: state.type === "事假" && full && span >= 5,
+      paper: state.type === T1 && full && span >= 5,
       lunch: full && span >= 3,
       report: state.type === "病假" && picked.some(function (x) { return INFECT.indexOf(x) >= 0; })
     };
@@ -400,16 +400,17 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   function renderSteps() {
     var n = needs();
     var html = '<li>下方藍色按鈕複製請假訊息，複製後回到line貼給老師。</li>';
+    if (n.report) html += '<li>請填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要填寫，請回到line訊息內，導師會提供表單連結。<span class="tip"><span class="bulb" aria-hidden="true">💡</span>若填寫有困難請洽導師，由導師協助填寫！</span></small></li>';
     if (n.lunch) html += '<li>請填「午餐停餐申請」，並截圖傳給老師<small>請假 3 個上課日以上需要，請於前一天中午 12:00 前提出。請回到line訊息內，導師會提供表單連結。<span class="tip"><span class="bulb" aria-hidden="true">💡</span>若填寫有困難請洽導師，由導師協助填寫！</span></small></li>';
-    if (n.report) html += '<li>最後填「校園傳染病通報系統」，並截圖傳給老師<small>確診傳染病時需要填寫，請回到line訊息內，導師會提供表單連結。<span class="tip"><span class="bulb" aria-hidden="true">💡</span>若填寫有困難請洽導師，由導師協助填寫！</span></small></li>';
-    if (n.paper) html += '<li class="star"><span class="mk" aria-hidden="true">*</span>事假 5 個上課日以上（共 ' + spanDays() + ' 天），另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。</small></li>';
+    if (n.paper) html += '<li class="star"><span class="mk" aria-hidden="true">*</span>事假/喪假 5 個上課日以上（共 ' + spanDays() + ' 天），另填紙本假單<small>上課日不含週末與國定假日。請洽導師拿紙本假單。</small></li>';
     $("#steps").innerHTML = html;
     $("#count").textContent = (1 + (n.lunch ? 1 : 0) + (n.report ? 1 : 0) + (n.paper ? 1 : 0)) + " 項";
   }
 
   var STD = {
     "腸病毒": "自主休息7日（發病日＋7）",
-    "流感": "退燒後再觀察24小時，沒再發燒才能返校",
+    "A型流感": "退燒後再觀察24小時，沒再發燒才能返校",
+    "B型流感": "退燒後再觀察24小時，沒再發燒才能返校",
     "新冠": "退燒後再觀察24小時，沒再發燒才能返校",
     "腸胃炎/腸胃型感冒": "症狀解除後再觀察48小時才能返校",
     "水痘": "水泡完全結痂脫落才能返校"
@@ -439,7 +440,8 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     $("#why").classList.toggle("need", picked.indexOf("其他") >= 0 && !$("#why").value.trim());
     $("#dOther").classList.toggle("need", diseases.indexOf("其他") >= 0 && !$("#dOther").value.trim());
     var dl = daysLabel();
-    var head = "【" + state.type + (dl ? "・" + dl : "") + (n.report ? "・傳染病" : "") + (n.lunch ? "・停餐" : "") + (n.paper ? "・紙本假單" : "") + "】";
+    var dnames = picked.filter(function (x) { return INFECT.indexOf(x) >= 0; });
+    var head = "【" + state.type + (dl ? "・" + dl : "") + (n.report ? "・傳染病" + (dnames.length ? "（" + dnames.join("、") + "）" : "") : "") + (n.lunch ? "・停餐" : "") + (n.paper ? "・紙本假單" : "") + "】";
     var lines = [
       head,
       "1.座號/姓名：" + $("#who").value.trim(),
@@ -456,16 +458,16 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     if (todo.length) blocks.push("*另須填寫" + todo.join("及") + "，填完截圖給老師。");
     if (n.report) blocks.push("🍃「傳染病通報系統」 " + REPORT_URL);
     if (n.lunch) blocks.push("🌸「午餐停餐申請」 " + LUNCH_URL);
-    if (n.paper) blocks.push("*事假5個上課日以上（共" + spanDays() + "天）：需另填紙本假單，請向導師領取。");
+    if (n.paper) blocks.push("*事假/喪假5個上課日以上（共" + spanDays() + "天）：需另填紙本假單，請向導師領取。");
     $("#msg").value = blocks.join("\n\n");
     markMiss();
     save();
   }
 
-  var CARDS = {"腸病毒": "ev.webp", "流感": "flu.webp", "新冠": "covid.webp", "腸胃炎/腸胃型感冒": "gastro.webp", "水痘": "pox.webp"};
+  var CARDS = {"腸病毒": "ev.webp", "A型流感": "flu.webp", "B型流感": "flu.webp", "新冠": "covid.webp", "腸胃炎/腸胃型感冒": "gastro.webp", "水痘": "pox.webp"};
   var careSig = "";
   function renderCare() {
-    var list = state.type === "病假" ? picked.filter(function (x) { return CARDS[x]; }) : [];
+    var list = state.type === "病假" ? picked.filter(function (x, i, a) { return CARDS[x] && a.findIndex(function (y) { return CARDS[y] === CARDS[x]; }) === i; }) : [];
     var sig = list.join(",");
     if (sig === careSig) return;
     careSig = sig;
@@ -521,8 +523,8 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
     var n = needs();
     var extra = n.lunch || n.report || n.paper;
     var links = [];
-    if (n.lunch) links.push("「午餐停餐」");
     if (n.report) links.push("「傳染病通報」");
+    if (n.lunch) links.push("「午餐停餐」");
     $("#finishText").textContent = extra
       ? "回到line貼給老師後" + (links.length ? "，點選" + links.join("、") + "的連結，填表後最後畫面的截圖再傳給老師" : "") + (n.paper ? "，並找老師索取紙本假單，填妥後交回" : "") + "，請假才算完成！"
       : "複製請假訊息，回到line貼給老師，請假才算完成！謝謝 😊";
@@ -582,5 +584,4 @@ legend { padding: 0; font-size: 14px; color: var(--muted); font-weight: 500; mar
   refresh();
 })();
 </script>
-
 </body></html>
